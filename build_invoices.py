@@ -1,5 +1,5 @@
 from fpdf import FPDF
-
+import os
 
 def draw_box(pdf_obj, x, y, w, h, line_width, text_lines):
     """
@@ -25,7 +25,8 @@ def draw_header_and_logo(pdf):
     pdf.cell(280, 5, txt="Litchfield Municipal Airport", ln=1, align="C")
     pdf.cell(280, 5, txt="23980 628th Avenue", ln=1, align="C")
     pdf.cell(280, 5, txt="Litchfield, MN 55355", ln=1, align="C")
-    pdf.image("plane_icon.jpg", x=123, w=50)
+    if os.path.exists('plane_icon.jpg'):
+        pdf.image("plane_icon.jpg", x=123, w=50)
 
 
 def draw_statement_number_block(pdf):
