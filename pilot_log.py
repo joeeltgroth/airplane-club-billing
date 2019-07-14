@@ -12,12 +12,12 @@ def read_csv(filename):
 
 
 def validate_rows(rows):
-    cards = []
+    pilot_logs = []
     for row in rows:
-        card = Log(row[0], row[1], row[2], row[3], row[4], row[5],
+        pilot_log = Log(row[0], row[1], row[2], row[3], row[4], row[5],
                    row[6], row[7], row[8], row[9], row[10], row[11], row[12])
-        cards.append(card)
-    return cards
+        pilot_logs.append(pilot_log)
+    return pilot_logs
 
 
 class Log:
@@ -45,11 +45,11 @@ class Log:
 
 
 def main():
-    data_rows = read_csv('pilot_log.csv')
+    data_rows = read_csv('data/pilot_log.csv')
     log_entries = validate_rows(data_rows)
 
     for r in log_entries:
-        print(r.pilot, r.price)
+        print(r.pilot, r.price, r.tach_in, r.fuel)
 
 
 if __name__ == "__main__":
