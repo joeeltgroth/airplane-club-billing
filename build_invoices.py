@@ -1,6 +1,7 @@
 from fpdf import FPDF
 import os
 
+
 def draw_box(pdf_obj, x, y, w, h, line_width, text_lines):
     """
       x and y are the coordinates of the upper left of the box.
@@ -102,19 +103,38 @@ def draw_table_monthly_due_row(pdf, y):
     draw_box(pdf, x + cell_width, y, cell_width * 8, row_height, .25, ["Monthly Due"])
     draw_box(pdf, x + cell_width * 9, y, cell_width, row_height, .25, monthly_due[0][1])
     draw_box(pdf, x + cell_width * 10, y, cell_width * 4, row_height, .25, '')
-
-    # for row in log_entries:
-    #     y += row_height
-    #     x = 10
-    #     for col in row:
-    #         draw_box(pdf, x, y, cell_width, row_height, .25, col)
-    #         x += cell_width
     return y + row_height
+
+
+def draw_total_row(pdf, y):
+    totals = {
+        "total_tach": "1.79",
+        "total_hobbs": "2.1",
+        "balance": "$214.68",
+        "gallons": "40.2",
+        "fuel": "$173.26",
+        "misc": "$0.00"
+    }
+    pdf.set_font("helvetica", size=8)
+    cell_width = (pdf.w - 20) / 14
+    row_height = pdf.font_size + 1.5
+    x = 10
+    draw_box(pdf, x + cell_width * 6, y, cell_width, row_height, 0, ["Total:"])
+    draw_box(pdf, x + cell_width * 7, y, cell_width, row_height, 0.25, [totals["total_tach"]])
+    draw_box(pdf, x + cell_width * 8, y, cell_width, row_height, 0.25, [totals["total_hobbs"]])
+    draw_box(pdf, x + cell_width * 9, y, cell_width, row_height, 0.25, [totals["balance"]])
+    draw_box(pdf, x + cell_width * 10, y, cell_width, row_height, 0.25, [totals["gallons"]])
+    draw_box(pdf, x + cell_width * 11, y, cell_width, row_height, 0.25, [''])
+    draw_box(pdf, x + cell_width * 12, y, cell_width, row_height, 0.25, [totals["fuel"]])
+    draw_box(pdf, x + cell_width * 13, y, cell_width, row_height, 0.25, [totals["misc"]])
+    return y + row_height
+
 
 def draw_table(pdf):
     y = draw_table_header(pdf)
     y = draw_table_log_rows(pdf, y)
-    draw_table_monthly_due_row(pdf, y)
+    y = draw_table_monthly_due_row(pdf, y)
+    draw_total_row(pdf, y)
 
 
 def main():
