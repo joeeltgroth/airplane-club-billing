@@ -1,5 +1,6 @@
 from fpdf import FPDF
 import os
+import string
 
 X = 10  # Left side of the PDF page.
 
@@ -249,6 +250,23 @@ def draw_table(pdf):
     y = draw_please_include_row(pdf, y)
     y = draw_balance_forward_row(pdf, y)
     draw_last_line(pdf, y)
+
+
+def create_pdf_filename(pilot):
+    filename = pilot.name.replace(" ","_")
+    filename = pilot.id + "-" + filename
+    filename = filename + ".pdf"
+    return filename
+
+
+def build_invoice_for_pilot(pilot_data):
+    pdf = FPDF(orientation='L', format='letter')
+    pdf.add_page()
+    draw_header_and_logo(pdf)
+    draw_statement_number_block(pdf)
+    draw_bill_to_block(pdf)
+    draw_table(pdf)
+    pdf.output(create_pdf_filename(pilot_data))
 
 
 def main():

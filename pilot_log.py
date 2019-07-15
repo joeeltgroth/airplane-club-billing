@@ -44,9 +44,14 @@ class Log:
             self.misc = float(misc.strip("$"))
 
 
-def main():
+def get_log_objects(filename):
     data_rows = read_csv('data/pilot_log.csv')
     log_entries = validate_rows(data_rows)
+    return log_entries
+
+
+def main():
+    log_entries = get_log_objects('data/pilot_log.csv')
 
     for r in log_entries:
         print(r.pilot, r.price, r.tach_in, r.fuel)

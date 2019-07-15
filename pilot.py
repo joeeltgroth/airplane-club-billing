@@ -42,9 +42,14 @@ def load_rows(rows):
     return pilots
 
 
+def get_pilot_objects(filename):
+    data_rows = read_csv(filename)
+    pilots_array = load_rows(data_rows)
+    return pilots_array
+
+
 def main():
-    data_rows = read_csv('data/pilot.csv')
-    pilots = load_rows(data_rows)
+    pilots = get_pilot_objects('data/pilot.csv')
 
     for p in pilots:
         print(p.id, p.name, p.short_name, p.amt_paid)
