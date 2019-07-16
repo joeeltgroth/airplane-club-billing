@@ -19,9 +19,19 @@ Purpose of each:
 
 ## Run it
 ```
-$ python build_invoices.py
+$ python main.py
 ```
 
 ## What to expect
-A pdf file will be created for each pilot in data/pilot.csv. 
+A pdf invoice file will be created (in the output directory) for 
+each pilot in data/pilot.csv. 
 
+
+### References
+ - FPDF Library: http://fpdf.org/
+ - Python environment manager: https://github.com/pyenv/pyenv
+ - Virtual Environments: https://virtualenv.pypa.io/en/latest/
+ - Pip Requirements: https://pip.pypa.io/en/stable/user_guide/
+ - Various techniques: https://stackoverflow.com
+ 
+ 
