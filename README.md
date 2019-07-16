@@ -33,5 +33,7 @@ each pilot in data/pilot.csv.
  - Virtual Environments: https://virtualenv.pypa.io/en/latest/
  - Pip Requirements: https://pip.pypa.io/en/stable/user_guide/
  - Various techniques: https://stackoverflow.com
+ - Dates: https://www.w3schools.com/python/python_datetime.asp
+ - Currency: https://stackoverflow.com/questions/21208376/converting-float-to-dollars-and-cents
  
  

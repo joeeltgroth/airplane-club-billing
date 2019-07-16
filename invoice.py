@@ -1,6 +1,9 @@
 from fpdf import FPDF
 import os
 import pilot as pilot_obj
+import club as club_obj
+import datetime
+import pilot_log
 
 
 class Invoice:
@@ -27,13 +30,24 @@ class Invoice:
 
     def draw_header_and_logo(self, pdf):
         pdf.set_font("helvetica", size=18, style='B')
-        pdf.cell(280, 10, txt="Litchfield Flying Club", ln=1, align="C")
+        pdf.cell(280, 10, txt=self.pilot.club.club_name, ln=1, align="C")
         pdf.set_font("helvetica", size=10)
-        pdf.cell(280, 5, txt="Litchfield Municipal Airport", ln=1, align="C")
-        pdf.cell(280, 5, txt="23980 628th Avenue", ln=1, align="C")
-        pdf.cell(280, 5, txt="Litchfield, MN 55355", ln=1, align="C")
+        pdf.cell(280, 5, txt=self.pilot.club.club_addr1, ln=1, align="C")
+        pdf.cell(280, 5, txt=self.pilot.club.club_addr2, ln=1, align="C")
+        csz = self.pilot.club.club_city + ", " + self.pilot.club.club_state + " " + self.pilot.club.club_zip
+        pdf.cell(280, 5, txt=csz, ln=1, align="C")
         if os.path.exists('plane_icon.jpg'):
             pdf.image("plane_icon.jpg", x=123, w=50)
+
+    def compute_statement_number(self):
+        d = datetime.datetime.now()
+        month = d.strftime("%m")
+        year = d.strftime("%y")
+        return month + year + self.pilot.id
+
+    def compute_statement_date(self):
+        d = datetime.datetime.now()
+        return d.strftime("%x")
 
     def draw_statement_number_block(self, pdf):
         pdf.set_font("helvetica", size=10, style='B')
@@ -41,18 +55,19 @@ class Invoice:
         self.draw_box(pdf, 32.4, 40, 10, pdf.font_size + 1.5, 0, ["Date:"])
         self.draw_box(pdf, 19, 45, 23, pdf.font_size + 1.5, 0, ["Member ID# :"])
         pdf.set_font("helvetica", size=10)
-        self.draw_box(pdf, 45, 35, 12, pdf.font_size + 1.5, 0, ["71936"])
-        self.draw_box(pdf, 45, 40, 12, pdf.font_size + 1.5, 0, ["07/05/19"])
-        self.draw_box(pdf, 45, 45, 12, pdf.font_size + 1.5, 0, ["36"])
+        self.draw_box(pdf, 45, 35, 12, pdf.font_size + 1.5, 0, [self.compute_statement_number()])
+        self.draw_box(pdf, 45, 40, 12, pdf.font_size + 1.5, 0, [self.compute_statement_date()])
+        self.draw_box(pdf, 45, 45, 12, pdf.font_size + 1.5, 0, [self.pilot.id])
 
     def draw_bill_to_block(self, pdf):
         pdf.set_font("helvetica", size=10, style='B')
         self.draw_box(pdf, 195, 35, 22, pdf.font_size + 1.5, 0, ["Bill To:"])
         pdf.set_font("helvetica", size=10)
-        self.draw_box(pdf, 210, 35, 12, pdf.font_size + 1.5, 0, ["Mr. Joe Eltgroth"])
-        self.draw_box(pdf, 210, 40, 12, pdf.font_size + 1.5, 0, ["3100 Jefferson Street"])
-        self.draw_box(pdf, 210, 45, 12, pdf.font_size + 1.5, 0, ["Hutchinson, MN 55350"])
-        self.draw_box(pdf, 210, 51.5, 12, pdf.font_size + 1.5, 0, ["the.pilots.email@gmail.com"])
+        self.draw_box(pdf, 210, 35, 12, pdf.font_size + 1.5, 0, [self.pilot.name])
+        self.draw_box(pdf, 210, 40, 12, pdf.font_size + 1.5, 0, [self.pilot.addr1])
+        csz = self.pilot.city + ", " + self.pilot.state + " " + self.pilot.zip
+        self.draw_box(pdf, 210, 45, 12, pdf.font_size + 1.5, 0, [csz])
+        self.draw_box(pdf, 210, 51.5, 12, pdf.font_size + 1.5, 0, [self.pilot.email])
 
     def draw_table_header(self, pdf):
         """
@@ -75,14 +90,10 @@ class Invoice:
         return y + row_height
 
     def draw_table_log_rows(self, pdf, y):
-        log_entries = [
-            [['6/13/19'], ['265'], ['90.57'], ['92.36'], ['114.8'], ['116.9'], ['92'], ['1.79'], ['2.1'], ['$164.68'],
-             ['25.13'], ['4.31'],
-             ['$108.31'], ['']],
-            [['6/13/19'], ['265'], [''], [''], [''], [''], ['92'], ['0'], ['0'], ['$0.00'], ['15.07'], ['4.31'],
-             ['$64.95'], ['']],
-            [[''], [''], [''], [''], [''], [''], [''], [''], [''], [''], [''], [''], [''], ['']],
-        ]
+        log_entries = []
+        for l in self.pilot.logs:
+            log_entries.append(l.get_log_as_array())
+
         pdf.set_font("helvetica", size=8)
         cell_width = (pdf.w - 20) / 14
         row_height = pdf.font_size + 1.5
@@ -168,7 +179,7 @@ class Invoice:
         row_height = pdf.font_size + 1.5
         self.draw_box(pdf, self.X, y, cell_width * 4, row_height, 0, ["Previous Balance:"])
         self.draw_box(pdf, self.X + cell_width * 2, y, cell_width, row_height, .25, ["-516.85"])
-        self.draw_box(pdf, self.X + cell_width * 7, y, cell_width * 3, row_height, 0, ["Litchfield Flying Club, Inc."])
+        self.draw_box(pdf, self.X + cell_width * 7, y, cell_width * 3, row_height, 0, [self.pilot.club.club_name])
         return y + row_height
 
     def draw_prev_bal_subtotal_row(self, pdf, y):
@@ -195,11 +206,7 @@ class Invoice:
         pdf.set_font("helvetica", size=8, style='B')
         self.draw_box(pdf, self.X, y, cell_width * 3, row_height, 0, ["Please Include Statement"])
         pdf.set_font("helvetica", size=8)
-        self.draw_box(pdf, self.X + cell_width * 7, y, cell_width * 2, row_height, 0, ["Litchfield Flying Club"])
-        pdf.set_font("helvetica", size=8, style='B')
-        self.draw_box(pdf, self.X + cell_width * 10, y, cell_width * 2, row_height, 0, ["Check Number:"])
-        pdf.set_font("helvetica", size=8)
-        self.draw_box(pdf, self.X + cell_width * 12, y, cell_width, row_height, 0, ["12345"])
+        self.draw_box(pdf, self.X + cell_width * 7, y, cell_width * 2, row_height, 0, [self.pilot.club.bill_name])
         return y + row_height
 
     def draw_balance_forward_row(self, pdf, y):
@@ -208,7 +215,7 @@ class Invoice:
         pdf.set_font("helvetica", size=8, style='B')
         self.draw_box(pdf, self.X, y, cell_width * 3, row_height, 0, ["Number On Your Check"])
         pdf.set_font("helvetica", size=8)
-        self.draw_box(pdf, self.X + cell_width * 7, y, cell_width * 2, row_height, 0, ["PO Box 112"])
+        self.draw_box(pdf, self.X + cell_width * 7, y, cell_width * 2, row_height, 0, [self.pilot.club.bill_addr1])
         pdf.set_font("helvetica", size=8, style='B')
         self.draw_box(pdf, self.X + cell_width * 10, y, cell_width * 2, row_height, 0, ["Balance Forward:"])
         pdf.set_font("helvetica", size=8)
@@ -220,7 +227,8 @@ class Invoice:
         row_height = pdf.font_size + 1.5
         pdf.set_font("helvetica", size=8)
         self.draw_box(pdf, self.X, y, cell_width * 3, row_height, 0, ["Terms: Full Payment by End of Billing Month"])
-        self.draw_box(pdf, self.X + cell_width * 7, y, cell_width * 2, row_height, 0, ["Litchfield, MN 55355"])
+        csz = self.pilot.club.bill_city + ", " + self.pilot.club.bill_state + " " + self.pilot.club.bill_zip
+        self.draw_box(pdf, self.X + cell_width * 7, y, cell_width * 2, row_height, 0, [csz])
         return y + row_height
 
     def draw_table(self, pdf):
@@ -258,8 +266,19 @@ def main():
     pdf = FPDF(orientation='L', format='letter')
     pdf.add_page()
 
-    pilot_data = pilot_obj.Pilot("1", "Joe Smith", "Joe", "1010 Clay Street", "", "Somecity", "MN", "55355", "someone@email.com",
-                       "100", "40")
+    pilot_data = pilot_obj.Pilot("1", "Joe Smith", "Joe", "1010 Clay Street", "", "Somecity", "MN", "55355",
+                                 "someone@email.com",
+                                 "100", "40")
+
+    club = club_obj.Club("Flying Club Name", "club_addr1", "club_addr2", "club city", "MN", "55555", "Club Bill Name",
+                         "bill addr1", "bill_addr2", "Bill City", "WI", "66666")
+    pilot_data.club = club
+
+    a_log = pilot_log.Log("6/13/19", "Joe", "29265", "92.36", "90.57", "1.79", "116.9", "114.8", "2.1", "25.13", "4.31",
+                          "108.31", "")
+    log_entries = [a_log]
+
+    pilot_data.logs = log_entries
 
     invoice = Invoice(pilot_data)
     invoice.build_invoice_for_pilot("output")

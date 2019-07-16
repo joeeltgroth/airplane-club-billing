@@ -15,7 +15,7 @@ def validate_rows(rows):
     pilot_logs = []
     for row in rows:
         pilot_log = Log(row[0], row[1], row[2], row[3], row[4], row[5],
-                   row[6], row[7], row[8], row[9], row[10], row[11], row[12])
+                        row[6], row[7], row[8], row[9], row[10], row[11], row[12])
         pilot_logs.append(pilot_log)
     return pilot_logs
 
@@ -33,19 +33,35 @@ class Log:
         self.hobbs_in = float(hobbs_in)
         self.hobbs_out = float(hobbs_out)
         self.hobbs = float(hobbs)
+        self.gallons = 0
         if len(gallons) > 0:
             self.gallons = float(gallons)
+        self.price = 0
         if len(price) > 0:
             self.price = float(price)
-        else:
-            self.price = 0
-        self.fuel = float(fuel.strip("$"))
+        self.fuel = 0
+        if len(fuel) > 0:
+            self.fuel = float(fuel.strip("$"))
+        self.misc = 0
         if len(misc) > 0:
             self.misc = float(misc.strip("$"))
 
+    def get_log_as_array(self):
+        rate = 0
+        if self.plane == "29265":
+            rate = 92
+        if self.plane == "741T":
+            rate = 46
+        due = self.hobbs * rate
+        log = [[self.flight_date.strftime("%x")], [self.plane], [str(self.tach_out)], [str(self.tach_in)],
+               [str(self.hobbs_out)], [str(self.hobbs_in)],
+               [str(rate)], [str(self.tach)], [str(self.hobbs)], ['${:,.2f}'.format(due)], [str(self.gallons)],
+               [str(self.price)], [str(self.fuel)], [str(self.misc)]]
+        return log
+
 
 def get_log_objects(filename):
-    data_rows = read_csv('data/pilot_log.csv')
+    data_rows = read_csv(filename)
     log_entries = validate_rows(data_rows)
     return log_entries
 
